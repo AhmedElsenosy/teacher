@@ -4,6 +4,8 @@ from app.database import db
 from app.schemas.assistant import AssistantRegister, AssistantLogin, AssistantOut
 from app.utils.auth import hash_password, verify_password
 from app.utils.jwt import create_access_token, decode_access_token
+from datetime import timedelta
+
 
 router = APIRouter(prefix="/assistant", tags=["Assistant Auth"])
 assistant_collection = db["assistants"]
@@ -25,6 +27,8 @@ async def register(data: AssistantRegister):
 
     await assistant_collection.insert_one(new_assistant)
     return AssistantOut(name=data.name)
+ 
+
 
 @router.post("/login")
 async def login(data: AssistantLogin):
@@ -35,8 +39,14 @@ async def login(data: AssistantLogin):
     if not verify_password(data.password, assistant["hashed_password"]):
         raise HTTPException(status_code=401, detail="Invalid password")
 
-    token = create_access_token({"sub": data.name})
+    payload = {
+        "id": str(assistant["_id"]),
+        "role": "assistant",  
+    }
+
+    token = create_access_token(payload)
     return {"access_token": token, "token_type": "bearer"}
+
 
 @router.get("/me", response_model=AssistantOut)
 async def get_me(token: str = Depends(oauth2_scheme)):

@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from decouple import config
+from dotenv import load_dotenv
+
+load_dotenv()
 
 JWT_SECRET = config("JWT_SECRET")
 JWT_ALGORITHM = config("JWT_ALGORITHM")
