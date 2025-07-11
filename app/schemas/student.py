@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from datetime import date
+from datetime import date, datetime
 from typing import Optional
 from enum import Enum
 
@@ -46,3 +46,10 @@ class StudentUpdate(BaseModel):
 class StudentOut(StudentBase):
     id: str
     student_id: int
+
+
+class ExamEntryCreate(BaseModel):
+    student_degree: int
+    degree_percentage: float
+    delivery_time: datetime
+    solution_photo: Optional[str] = None

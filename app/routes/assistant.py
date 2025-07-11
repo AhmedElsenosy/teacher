@@ -41,7 +41,8 @@ async def login(data: AssistantLogin):
 
     payload = {
         "id": str(assistant["_id"]),
-        "role": "assistant",  
+        "role": "assistant", 
+        "sub": data.name, 
     }
 
     token = create_access_token(payload)
