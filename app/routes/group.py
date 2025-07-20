@@ -81,13 +81,20 @@ async def add_student_to_group(group_id: str, payload: AddStudentToGroup):
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
 
-    if student_obj_id in group.students:
-        raise HTTPException(status_code=400, detail="Student already in group")
+    # Remove student from any other group
+    other_groups = await Group.find(Group.students == student_obj_id).to_list()
+    for other_group in other_groups:
+        if other_group.id != group.id:
+            other_group.students.remove(student_obj_id)
+            await other_group.save()
 
-    group.students.append(student_obj_id)
-    await group.save()
-
-    return {"message": "Student added to group successfully"}
+    # Add to new group if not already present
+    if student_obj_id not in group.students:
+        group.students.append(student_obj_id)
+        await group.save()
+        return {"message": "Student moved to new group successfully"}
+    else:
+        return {"message": "Student already in this group"}
 
 @router.get("/{group_id}", response_model=GroupWithStudentsOut)
 async def get_group_by_id(group_id: str):

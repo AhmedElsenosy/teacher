@@ -13,6 +13,11 @@ from app.models.common import PyObjectId
 from app.schemas.student import ExamEntryCreate
 from app.schemas.exam import ExamCreate, ExamUpdate, ExamOut
 from app.models.student_document import StudentDocument, ExamEntry
+from app.database import db
+
+students_collection = db["students"]
+exams_collection = db["exams"]
+
 
 
 router = APIRouter(prefix="/exams", tags=["Exams"])
@@ -54,9 +59,21 @@ async def create_exam(
 
 
 @router.get("/", response_model=List[ExamOut])
-async def get_all_exams(assistant=Depends(get_current_assistant)):
-    exams = await ExamModel.find_all().to_list()
-    return [ExamOut(**exam.dict(exclude={"id", "_id"}), id=str(exam.id)) for exam in exams]
+async def get_all_exams():
+    exams = await exams_collection.find().to_list(length=None)
+    students = await students_collection.find().to_list(length=None)
+    exam_list = []
+    for exam in exams:
+        exam_id = str(exam["_id"])
+        # Count students who have this exam in their exams list
+        count = sum(
+            any(str(entry.get("exam_id", "")) == exam_id for entry in student.get("exams", []))
+            for student in students
+        )
+        exam["id"] = exam_id
+        exam["student_count"] = count
+        exam_list.append(ExamOut(**exam))
+    return exam_list
 
 
 @router.put("/{exam_id}", response_model=ExamOut)
@@ -152,23 +169,44 @@ async def add_student_to_exam(
 
 
 @router.get("/{exam_id}/students")
-async def get_students_for_exam(exam_id: str, assistant=Depends(get_current_assistant)):
-    students = await StudentDocument.find({"exams.exam_id": exam_id}).to_list()
-    
-    results = []
+async def get_students_for_exam(exam_id: str):
+    # Fetch exam
+    exam = await exams_collection.find_one({"_id": ObjectId(exam_id)})
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found")
+
+    # Extract exam info
+    exam_details = {
+        "exam_id": str(exam["_id"]),
+        "exam_name": exam["exam_name"],
+        "exam_level": exam["exam_level"],
+        "exam_date": exam["exam_date"],
+        "exam_start_time": exam["exam_start_time"],
+        "final_degree": exam["final_degree"],
+        "solution_photo": exam.get("solution_photo")
+    }
+
+    # Search students who participated
+    students = await students_collection.find().to_list(length=None)
+    entered_students = []
     for student in students:
-        for entry in student.exams:
-            if entry.exam_id == exam_id:
-                results.append({
-                    "student_id": str(student.id),
-                    "first_name": student.first_name,
-                    "last_name": student.last_name,
-                    "student_degree": entry.degree,  # ✅ Correct field
-                    "degree_percentage": entry.percentage,
-                    "delivery_time": entry.delivery_time,
-                    "solution_photo": entry.solution_photo,
+        for entry in student.get("exams", []):
+            if str(entry.get("exam_id", "")) == exam_id:
+                entered_students.append({
+                    "student_id": student["student_id"],
+                    "first_name": student["first_name"],
+                    "last_name": student["last_name"],
+                    "phone_number": student["phone_number"],
+                    "guardian_number": student["guardian_number"],
+                    "degree": entry.get("degree"),
+                    "percentage": entry.get("percentage"),
+                    "delivery_time": entry.get("delivery_time")
                 })
-                break  # Assuming only one record per student per exam
-    return {"students": results}
+
+    return {
+        "exam": exam_details,
+        "student_count": len(entered_students),
+        "students": entered_students
+    }
 
 

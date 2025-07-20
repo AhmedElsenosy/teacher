@@ -10,6 +10,7 @@ from app.utils.fingerprint import enroll_fingerprint
 import subprocess
 from app.utils.id_generator import get_next_sequence
 from app.models.counter import Counter
+from app.models.group import Group
 
 # ✅ Apply authentication to all routes in this router
 router = APIRouter(
@@ -72,6 +73,13 @@ async def get_all_students():
     for student in students:
         student["id"] = str(student["_id"])
         del student["_id"]
+        student.setdefault("is_subscription", False)
+        student.setdefault("uid", 0)
+
+        # Find group(s) for this student
+        group = await Group.find(Group.students == ObjectId(student["id"])).first_or_none()
+        student["group"] = group.group_name if group else None
+
     return [StudentOut(**student) for student in students]
 
 
@@ -83,6 +91,13 @@ async def get_student_by_id(student_id: int):
 
     student["id"] = str(student["_id"])
     del student["_id"]
+    student.setdefault("is_subscription", False)
+    student.setdefault("uid", 0)
+
+    # Find group(s) for this student
+    group = await Group.find(Group.students == ObjectId(student["id"])).first_or_none()
+    student["group"] = group.group_name if group else None
+
     return StudentOut(**student)
 
 

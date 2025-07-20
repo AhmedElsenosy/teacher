@@ -17,11 +17,9 @@ async def auto_attendance(data: AttendanceRequest):
     try:
         # Parse timestamp (aware or naive)
         aware_timestamp = isoparse(data.timestamp)
-
-        # Convert to naive datetime (removing timezone info)
         egypt_tz = pytz.timezone("Africa/Cairo")
-        local_timestamp = aware_timestamp.astimezone(egypt_tz).astimezone(pytz.utc).replace(tzinfo=None)
-        timestamp = local_timestamp
+        # Ensure timestamp is in Egypt time
+        local_timestamp = aware_timestamp.astimezone(egypt_tz)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid input format: {e}")
 
@@ -33,14 +31,18 @@ async def auto_attendance(data: AttendanceRequest):
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
 
-    # Build naive scheduled time based on Egypt time (08:00)
-    today = timestamp.date()
-    scheduled_start_time = datetime.combine(today, datetime.strptime("08:00", "%H:%M").time())
+    try:
+        group_start_time_str = group.start_time
+        group_start_time = datetime.strptime(group_start_time_str, "%H:%M").time()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Invalid group start_time format: {e}")
 
+    today = local_timestamp.date()
+    scheduled_start_time = egypt_tz.localize(datetime.combine(today, group_start_time))
     allowed_start = scheduled_start_time - timedelta(hours=1)
     allowed_end = scheduled_start_time + timedelta(hours=1)
 
-    is_on_time = allowed_start <= timestamp <= allowed_end
+    is_on_time = allowed_start <= local_timestamp <= allowed_end
 
     if not hasattr(student, "attendance") or not isinstance(student.attendance, dict):
         student.attendance = {}

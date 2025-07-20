@@ -28,3 +28,4 @@ class ExamUpdate(BaseModel):
 
 class ExamOut(ExamBase):
     id: str
+    student_count: int = 0

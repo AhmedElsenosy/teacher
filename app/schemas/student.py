@@ -50,6 +50,9 @@ class StudentUpdate(BaseModel):
 class StudentOut(StudentBase):
     id: str
     student_id: int
+    is_subscription: bool
+    uid: int
+    group: Optional[str] = None
 
 
 class ExamEntryCreate(BaseModel):
