@@ -6,10 +6,13 @@ from app.utils.auth import hash_password, verify_password
 from app.utils.jwt import create_access_token, decode_access_token
 from datetime import timedelta
 
+from fastapi import Depends
+from fastapi.security import OAuth2PasswordRequestForm
+
 
 router = APIRouter(prefix="/assistant", tags=["Assistant Auth"])
 assistant_collection = db["assistants"]
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/assistant/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="assistant/login")
 
 @router.post("/register", response_model=AssistantOut)
 async def register(data: AssistantRegister):
@@ -31,18 +34,18 @@ async def register(data: AssistantRegister):
 
 
 @router.post("/login")
-async def login(data: AssistantLogin):
-    assistant = await assistant_collection.find_one({"name": data.name})
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    assistant = await assistant_collection.find_one({"name": form_data.username})
     if not assistant:
         raise HTTPException(status_code=404, detail="Assistant not found")
 
-    if not verify_password(data.password, assistant["hashed_password"]):
+    if not verify_password(form_data.password, assistant["hashed_password"]):
         raise HTTPException(status_code=401, detail="Invalid password")
 
     payload = {
         "id": str(assistant["_id"]),
         "role": "assistant", 
-        "sub": data.name, 
+        "sub": form_data.username, 
     }
 
     token = create_access_token(payload)
@@ -60,3 +63,11 @@ async def get_me(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=404, detail="Assistant not found")
 
     return AssistantOut(name=assistant["name"])
+
+
+@router.post("/logout")
+async def logout():
+    """
+    Instruct the client to remove the token.
+    """
+    return {"message": "Logged out successfully. Please remove the token on the client side."}

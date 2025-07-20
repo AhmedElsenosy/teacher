@@ -1,11 +1,15 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from app.database import db
-from app.schemas.student import StudentCreate, StudentOut, StudentUpdate
+from app.schemas.student import StudentCreate, StudentOut, StudentUpdate, StudentBase
 from app.models.student import StudentModel
 from app.dependencies.auth import get_current_assistant
 from bson import ObjectId
 from datetime import datetime, date
 from typing import List
+from app.utils.fingerprint import enroll_fingerprint
+import subprocess
+from app.utils.id_generator import get_next_sequence
+from app.models.counter import Counter
 
 # ✅ Apply authentication to all routes in this router
 router = APIRouter(
@@ -19,40 +23,47 @@ counters_collection = db["counters"]
 
 # Utility to generate the next student_id
 async def get_next_student_id():
-    counter = await counters_collection.find_one_and_update(
-        {"_id": "student_id"},
-        {"$inc": {"value": 1}},
-        return_document=True
-    )
+    counter = await Counter.find_one(Counter.name == "student_id")
     if not counter:
-        raise HTTPException(status_code=500, detail="Counter document not found.")
-    return counter["value"]
+        counter = Counter(name="student_id", sequence_value=10000)
+        await counter.insert()
+    counter.sequence_value += 1
+    await counter.save()
+    return counter.sequence_value
+
+@router.get("/next-ids")
+async def get_next_ids():
+    next_id = await get_next_student_id()
+    return {"student_id": next_id, "uid": next_id}
 
 
 @router.post("/", response_model=StudentOut)
 async def create_student(student: StudentCreate):
-    student_id = await get_next_student_id()
     student_data = student.dict()
 
-    # Convert birth_date (date) → datetime
-    birth_date = student_data["birth_date"]
-    if isinstance(birth_date, date):
-        student_data["birth_date"] = datetime.combine(birth_date, datetime.min.time())
+    # Auto-increment IDs
+    student_data["student_id"] = await get_next_sequence("student_id")
+    student_data["uid"] = await get_next_sequence("uid")
 
-    # Convert Enums to raw values
-    if hasattr(student_data["gender"], "value"):
-        student_data["gender"] = student_data["gender"].value
-    if hasattr(student_data["level"], "value"):
-        student_data["level"] = student_data["level"].value
+    # Convert birth_date to datetime
+    if isinstance(student_data["birth_date"], date):
+        student_data["birth_date"] = datetime.combine(student_data["birth_date"], datetime.min.time())
 
-    student_data.update({
-        "student_id": student_id,
-        "created_at": datetime.utcnow()
-    })
+    # Convert enums
+    student_data["gender"] = getattr(student_data["gender"], "value", student_data["gender"])
+    student_data["level"] = getattr(student_data["level"], "value", student_data["level"])
 
+    # Extra metadata
+    student_data["created_at"] = datetime.utcnow()
+    student_data["updated_at"] = None
+    student_data["exams"] = []
+
+    # Insert into DB
     result = await students_collection.insert_one(student_data)
     student_data["id"] = str(result.inserted_id)
+
     return StudentOut(**student_data)
+
 
 
 @router.get("/", response_model=List[StudentOut])
@@ -94,3 +105,6 @@ async def delete_student(student_id: int):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Student not found")
     return {"message": "Student deleted successfully"}
+
+
+

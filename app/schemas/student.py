@@ -2,6 +2,8 @@ from pydantic import BaseModel, EmailStr
 from datetime import date, datetime
 from typing import Optional
 from enum import Enum
+from app.models.common import PyObjectId, ExamEntry
+
 
 
 # Choices for gender and level
@@ -27,7 +29,9 @@ class StudentBase(BaseModel):
     school_name: str
 
 class StudentCreate(StudentBase):
-    pass
+    uid: Optional[int] = None
+    student_id: Optional[int] = None
+    is_subscription: bool
 
 
 class StudentUpdate(BaseModel):
@@ -53,3 +57,4 @@ class ExamEntryCreate(BaseModel):
     degree_percentage: float
     delivery_time: datetime
     solution_photo: Optional[str] = None
+

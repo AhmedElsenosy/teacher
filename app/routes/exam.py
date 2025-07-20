@@ -1,16 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from datetime import date, datetime
 from typing import List
-from app.dependencies.auth import get_current_assistant
-from app.models.exam import ExamModel
-from app.models.student import StudentModel, PyObjectId #, ExamEntry
-from app.schemas.student import ExamEntryCreate
-from app.schemas.exam import ExamCreate, ExamUpdate, ExamOut
-from app.models.student_document import StudentDocument, ExamEntry
 from pathlib import Path
 from bson import ObjectId
 import shutil
 import os
+
+from app.dependencies.auth import get_current_assistant
+from app.models.exam import ExamModel
+from app.models.student import StudentModel
+from app.models.common import PyObjectId  
+from app.schemas.student import ExamEntryCreate
+from app.schemas.exam import ExamCreate, ExamUpdate, ExamOut
+from app.models.student_document import StudentDocument, ExamEntry
+
 
 router = APIRouter(prefix="/exams", tags=["Exams"])
 

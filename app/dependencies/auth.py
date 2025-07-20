@@ -4,7 +4,7 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 from decouple import config
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="assistants/login")  # or your login endpoint
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="assistant/login")  # or your login endpoint
 
 SECRET_KEY = config("JWT_SECRET")
 ALGORITHM = config("JWT_ALGORITHM")
