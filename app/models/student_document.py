@@ -6,12 +6,15 @@ from typing import Optional, List
 from pydantic import Field, BaseModel
 
 
+
+
 class ExamEntry(BaseModel):
     exam_id: str
-    degree: float
-    percentage: float
+    degree: Optional[float] = None
+    percentage: Optional[float] = None
     delivery_time: datetime
     solution_photo: Optional[str] = None
+
 
 class StudentDocument(Document):
     id: ObjectId = Field(default_factory=ObjectId, alias="_id")

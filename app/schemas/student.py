@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional, List
 from enum import Enum
 from app.models.common import PyObjectId, ExamEntry
 
@@ -19,14 +19,14 @@ class Level(int, Enum):
 class StudentBase(BaseModel):
     first_name: str
     last_name: str
-    email: EmailStr
+    email: Optional[EmailStr] = None
     phone_number: str
     guardian_number: str
-    birth_date: date
-    national_id: str
+    birth_date: Optional[date] = None
+    national_id: Optional[str] = None
     gender: Gender
     level: Level
-    school_name: str
+    school_name: Optional[str] = None
 
 class StudentCreate(StudentBase):
     uid: Optional[int] = None
@@ -60,4 +60,13 @@ class ExamEntryCreate(BaseModel):
     degree_percentage: float
     delivery_time: datetime
     solution_photo: Optional[str] = None
+
+class PaginatedStudentsResponse(BaseModel):
+    students: List[StudentOut]
+    total: int
+    page: int
+    limit: int
+    total_pages: int
+    has_next: bool
+    has_prev: bool
 

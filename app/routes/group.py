@@ -30,8 +30,7 @@ async def get_all_groups():
         group_name=group.group_name,
         start_time=group.start_time,
         level=group.level,
-        day1=group.day1,
-        day2=group.day2
+        days=group.days
     ) for group in groups]
 
 

@@ -1,0 +1,92 @@
+nohup: ignoring input
+INFO:     Will watch for changes in these directories: ['/home/ahmed/Desktop/teacher/venv/src']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [52998] using StatReload
+/usr/local/lib/python3.10/dist-packages/pydantic/_internal/_config.py:373: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+INFO:     Started server process [53046]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:57468 - "GET /docs HTTP/1.1" 200 OK
+Processing bubble sheet
+============================================================
+Using exam model: exam_model_aruco
+Image loaded: 884x1280 pixels
+Image aligned using ArUco markers
+Processing exam model using stored coordinate data...
+Using dynamic ArUco-based positioning...
+Calculating exam model positions relative to ArUco markers...
+============================================================
+ArUco reference frame:
+  Top-left marker (ID 0): [187.5 364. ]
+  Top-right marker (ID 1): [2192.5  364. ]
+  Width between markers: 2005.0
+  Top marker Y position: 364.0
+
+Bubble A:
+  Absolute position: [1301, 397]
+  X ratio from left ArUco: 0.5554
+  Y offset from ArUco line: 33.0 pixels
+
+Bubble B:
+  Absolute position: [1191, 397]
+  X ratio from left ArUco: 0.5005
+  Y offset from ArUco line: 33.0 pixels
+
+Bubble C:
+  Absolute position: [1085, 397]
+  X ratio from left ArUco: 0.4476
+  Y offset from ArUco line: 33.0 pixels
+
+Calculating exam model positions for current image:
+  Current top-left ArUco: [34.75 28.75]
+  Current top-right ArUco: [976.75  34.25]
+  Current ArUco width: 942.0
+  Current ArUco Y: 28.75
+  Model A: (557, 61)
+  Model B: (506, 61)
+  Model C: (456, 61)
+============================================================
+✅ Processing completed successfully!
+Processing bubble sheet
+============================================================
+Using exam model: exam_model_aruco
+Image loaded: 884x1280 pixels
+Image aligned using ArUco markers
+Processing exam model using stored coordinate data...
+Using dynamic ArUco-based positioning...
+Calculating exam model positions relative to ArUco markers...
+============================================================
+ArUco reference frame:
+  Top-left marker (ID 0): [187.5 364. ]
+  Top-right marker (ID 1): [2192.5  364. ]
+  Width between markers: 2005.0
+  Top marker Y position: 364.0
+
+Bubble A:
+  Absolute position: [1301, 397]
+  X ratio from left ArUco: 0.5554
+  Y offset from ArUco line: 33.0 pixels
+
+Bubble B:
+  Absolute position: [1191, 397]
+  X ratio from left ArUco: 0.5005
+  Y offset from ArUco line: 33.0 pixels
+
+Bubble C:
+  Absolute position: [1085, 397]
+  X ratio from left ArUco: 0.4476
+  Y offset from ArUco line: 33.0 pixels
+
+Calculating exam model positions for current image:
+  Current top-left ArUco: [34.75 28.75]
+  Current top-right ArUco: [976.75  34.25]
+  Current ArUco width: 942.0
+  Current ArUco Y: 28.75
+  Model A: (557, 61)
+  Model B: (506, 61)
+  Model C: (456, 61)
+============================================================
+✅ Processing completed successfully!
+INFO:     127.0.0.1:57312 - "POST /exams/68935bfb9dbb8b3ec9e140f3/submit HTTP/1.1" 200 OK

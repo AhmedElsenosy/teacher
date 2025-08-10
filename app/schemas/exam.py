@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from enum import IntEnum
 from datetime import date
+from typing import List
 
 class LevelChoices(IntEnum):
     level1 = 1
@@ -29,3 +30,12 @@ class ExamUpdate(BaseModel):
 class ExamOut(ExamBase):
     id: str
     student_count: int = 0
+
+class PaginatedExamsResponse(BaseModel):
+    exams: List[ExamOut]
+    total: int
+    page: int
+    limit: int
+    total_pages: int
+    has_next: bool
+    has_prev: bool

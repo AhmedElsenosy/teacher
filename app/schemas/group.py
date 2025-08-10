@@ -19,16 +19,14 @@ class GroupCreate(BaseModel):
     group_name: str
     start_time: str
     level: int = Field(..., ge=1, le=3)
-    day1: DayOfWeek
-    day2: DayOfWeek
+    days: List[DayOfWeek]
 
 
 class GroupUpdate(BaseModel):
     group_name: Optional[str] = None
     start_time: Optional[str] = None
     level: Optional[int] = None
-    day1: Optional[DayOfWeek] = None
-    day2: Optional[DayOfWeek] = None
+    days: Optional[List[DayOfWeek]] = None
 
 
 class GroupOut(BaseModel):
@@ -36,8 +34,7 @@ class GroupOut(BaseModel):
     group_name: str
     start_time: time
     level: int
-    day1: DayOfWeek
-    day2: DayOfWeek
+    days: List[DayOfWeek]
 
 class AddStudentToGroup(BaseModel):
     student_id: PyObjectId

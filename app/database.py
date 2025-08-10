@@ -8,6 +8,10 @@ client = AsyncIOMotorClient(MONGO_URI)
 db = client[DATABASE_NAME]
 
 
+student_collection = db["students"]
+archived_student_collection = db["archived_students"]
+monthsale_collection = db["monthsales"]
+
 async def get_next_student_id():
     counter = await db["counters"].find_one_and_update(
         {"_id": "student_id"},

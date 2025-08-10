@@ -43,8 +43,7 @@ class Group(Document):
     group_name: str
     start_time: str
     level: int = Field(..., ge=1, le=3)
-    day1: DayOfWeek
-    day2: DayOfWeek
+    days: List[DayOfWeek]
     students: List[PyObjectId] = []
 
     class Settings:
